@@ -9,7 +9,9 @@ import {
   TouchableOpacity,
   ListRenderItem,
 } from 'react-native';
-
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import CatPhotosCarousel from './views/CatPhotosCarousel';
 // Define the type for the tile data
 interface Tile {
   id: string;
@@ -17,7 +19,9 @@ interface Tile {
   isRed: boolean;
 }
 
-const App: React.FC = () => {
+const Stack = createStackNavigator();
+
+const HomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [count, setCount] = useState<number>(0);
 
   // Sample data for the tile list
@@ -48,21 +52,26 @@ const App: React.FC = () => {
     setCount(count + 1);
   };
 
-  // Toggle the color of the tile when clicked
-  const handleTilePress = (id: string) => {
-    const updatedTiles = tileData.map((tile) =>
-      tile.id === id ? { ...tile, isRed: !tile.isRed } : tile
-    );
-    setTileData(updatedTiles);
+  // Handle tile press
+  const handleTilePress = (id: string, title: string) => {
+    if (title === 'Pili') {
+      navigation.navigate('CatPhotosCarousel');  // Navigate to carousel when "Pili" is pressed
+    } else {
+      // Toggle the color of the tile for other tiles
+      const updatedTiles = tileData.map((tile) =>
+        tile.id === id ? { ...tile, isRed: !tile.isRed } : tile
+      );
+      setTileData(updatedTiles);
+    }
   };
 
-  // Render each tile with the appropriate color
+  // Render each tile
   const renderItem: ListRenderItem<Tile> = ({ item }) => (
     <TouchableOpacity
       style={[styles.tile, { backgroundColor: item.isRed ? '#ff7f7f' : '#3498db' }]}
-      onPress={() => handleTilePress(item.id)}
-      testID= {`tile-${item.id}`}
-      accessibilityLabel= {item.isRed ? 'red-tile' : 'blue-tile'}
+      onPress={() => handleTilePress(item.id, item.title)}
+      testID={`tile-${item.id}`}
+      accessibilityLabel={item.isRed ? 'red-tile' : 'blue-tile'}
     >
       <Text style={styles.tileText}>{item.title}</Text>
     </TouchableOpacity>
@@ -81,8 +90,7 @@ const App: React.FC = () => {
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
         numColumns={2}  // Renders in 2 columns
-        contentContainerStyle={{ flexGrow: 1}}
-        testID='tileList'
+        contentContainerStyle={{ flexGrow: 1 }}
       />
     </SafeAreaView>
   );
@@ -91,7 +99,7 @@ const App: React.FC = () => {
 // Define the styles for the grid layout and tiles
 const styles = StyleSheet.create({
   container: {
-    flex: 1, // Allow the container to take up the full screen
+    flex: 1,
     padding: 20,
   },
   text: {
@@ -102,9 +110,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     marginVertical: 20,
     fontWeight: 'bold',
-  },
-  tileList: {
-    justifyContent: 'center',
   },
   tile: {
     backgroundColor: '#3498db',
@@ -121,5 +126,16 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
+
+const App = () => {
+  return (
+    <NavigationContainer>
+      <Stack.Navigator initialRouteName="Home">
+        <Stack.Screen name="Home" component={HomeScreen} />
+        <Stack.Screen name="CatPhotosCarousel" component={CatPhotosCarousel} />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+};
 
 export default App;
